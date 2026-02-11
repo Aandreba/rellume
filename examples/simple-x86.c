@@ -22,7 +22,6 @@
 
 #include <rellume/rellume.h>
 
-
 int main(void) {
     // Create LLVM module
     LLVMModuleRef mod = LLVMModuleCreateWithName("lifter");
@@ -36,17 +35,19 @@ int main(void) {
     // };
 
     static const unsigned char code[] = {
-        0x8b, 0x54, 0x24, 0x04, // mov    edx,DWORD PTR [esp+0x4]
-        0x8b, 0x4c, 0x24, 0x08, // mov    ecx,DWORD PTR [esp+0x8]
-        0x8b, 0x02,             // mov    eax,DWORD PTR [edx]
-        0x03, 0x04, 0x8a,       // add    eax,DWORD PTR [edx+ecx*4]
+        0x8b, 0x44, 0x24, 0x04, // mov    eax,DWORD PTR [esp+0x4]
+        0x8b, 0x54, 0x24, 0x08, // mov    edx,DWORD PTR [esp+0x8]
+        0x8b, 0x08,             // mov    eax,DWORD PTR [eax]
+        0x03, 0x0c, 0x90,       // add    ecx,DWORD PTR [eax+edx*4]
+        0x0f, 0x31,             // rdtsc
+        0x01, 0xc8,             // add    eax,ecx
         0xc3,                   // ret
     };
 
     // Create function for lifting
     LLConfig* cfg = ll_config_new();
     ll_config_set_architecture(cfg, "x86");
-    ll_config_set_call_ret_clobber_flags(cfg, true);
+    ll_config_set_call_ret_clobber_flags(cfg, false);
     LLFunc* fn = ll_func_new(mod, cfg);
     // Lift the whole function by following all direct jumps
     ll_func_decode_cfg(fn, (uintptr_t) code, NULL, NULL);
@@ -55,3 +56,4 @@ int main(void) {
 
     return 0;
 }
+

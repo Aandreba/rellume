@@ -55,6 +55,8 @@ struct LLConfig {
     /// Don't use absolute instruction addresses to set RIP. The actual RIP is
     /// supplied as in the RIP register field of the CPU struct.
     bool position_independent_code = false;
+    /// Function used to get the RDTSC (should return an i64, and take no arguments). Defaults to hardware implementation
+    llvm::Function* rdtsc_function = nullptr;
 
     /// Instruction Set Architecture of the code to lift.
     Arch arch = Arch::DEFAULT;

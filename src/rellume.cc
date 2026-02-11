@@ -92,6 +92,10 @@ void ll_config_set_cpuinfo_func(LLConfig* cfg, LLVMValueRef value) {
     llvm::Value* uw_value = llvm::unwrap(value);
     unwrap(cfg)->cpuinfo_function = llvm::cast_or_null<llvm::Function>(uw_value);
 }
+void ll_config_set_rdtsc_function(LLConfig* cfg, LLVMValueRef value) {
+    llvm::Value* uw_value = llvm::unwrap(value);
+    unwrap(cfg)->rdtsc_function = llvm::cast_or_null<llvm::Function>(uw_value);
+}
 void ll_config_set_instr_marker(LLConfig* cfg, LLVMValueRef value) {
     if (value)
         unwrap(cfg)->instr_marker = llvm::unwrap<llvm::Function>(value);

@@ -715,7 +715,7 @@ void Lifter::LiftCpuid(const Instr& inst) {
 void Lifter::LiftRdtsc(const Instr& inst) {
     llvm::Module* module = irb.GetInsertBlock()->getModule();
     auto id = llvm::Intrinsic::readcyclecounter;
-    auto intrinsic = llvm::Intrinsic::getDeclaration(module, id);
+    auto intrinsic = cfg.rdtsc_function ? cfg.rdtsc_function : llvm::Intrinsic::getDeclaration(module, id);
     llvm::Value* res = irb.CreateCall(intrinsic);
     llvm::Value* lo = irb.CreateTrunc(res, irb.getInt32Ty());
     llvm::Value* hi = irb.CreateLShr(res, irb.getInt64(32));
