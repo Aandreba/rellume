@@ -23,17 +23,18 @@
 
 #include "callconv.h"
 
+#include <llvm/IR/Function.h>
+#include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/Instruction.h>
+#include <llvm/IR/Instructions.h>
+#include <llvm/IR/Type.h>
+#include <llvm/IR/Value.h>
+
+#include <cassert>
+
 #include "basicblock.h"
 #include "function-info.h"
 #include "regfile.h"
-#include <llvm/IR/Function.h>
-#include <llvm/IR/Instruction.h>
-#include <llvm/IR/Instructions.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/Type.h>
-#include <llvm/IR/Value.h>
-#include <cassert>
-
 
 namespace rellume {
 
@@ -43,16 +44,22 @@ CallConv CallConv::FromFunction(llvm::Function* fn, Arch arch) {
     CallConv hunch = INVALID;
     switch (arch) {
 #ifdef RELLUME_WITH_X86
-    case Arch::X86: hunch = X86_SPTR; break;
-#endif // RELLUME_WITH_X86
+        case Arch::X86:
+            hunch = X86_SPTR;
+            break;
+#endif  // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
-    case Arch::RV64: hunch = RV64_SPTR; break;
-#endif // RELLUME_WITH_RV64
+        case Arch::RV64:
+            hunch = RV64_SPTR;
+            break;
+#endif  // RELLUME_WITH_RV64
 #ifdef RELLUME_WITH_AARCH64
-    case Arch::AArch64: hunch = AArch64_SPTR; break;
-#endif // RELLUME_WITH_AARCH64
-    default:
-        return INVALID;
+        case Arch::AArch64:
+            hunch = AArch64_SPTR;
+            break;
+#endif  // RELLUME_WITH_AARCH64
+        default:
+            return INVALID;
     }
 
     // Verify hunch.
@@ -76,52 +83,65 @@ llvm::FunctionType* CallConv::FnType(llvm::LLVMContext& ctx,
     llvm::Type* ptrTy = llvm::PointerType::get(ctx, sptr_addrspace);
 
     switch (*this) {
-    default:
-        return nullptr;
-    case CallConv::X86_SPTR:
-    case CallConv::RV64_SPTR:
-    case CallConv::AArch64_SPTR:
-        return llvm::FunctionType::get(void_ty, {ptrTy}, false);
+        default:
+            return nullptr;
+        case CallConv::X86_SPTR:
+        case CallConv::RV64_SPTR:
+        case CallConv::AArch64_SPTR:
+            return llvm::FunctionType::get(void_ty, {ptrTy}, false);
     }
 }
 
 llvm::CallingConv::ID CallConv::FnCallConv() const {
     switch (*this) {
-    default: return llvm::CallingConv::C;
-    case CallConv::X86_SPTR: return llvm::CallingConv::C;
-    case CallConv::RV64_SPTR: return llvm::CallingConv::C;
-    case CallConv::AArch64_SPTR: return llvm::CallingConv::C;
+        default:
+            return llvm::CallingConv::C;
+        case CallConv::X86_SPTR:
+            return llvm::CallingConv::C;
+        case CallConv::RV64_SPTR:
+            return llvm::CallingConv::C;
+        case CallConv::AArch64_SPTR:
+            return llvm::CallingConv::C;
     }
 }
 
 unsigned CallConv::CpuStructParamIdx() const {
     switch (*this) {
-    default: return 0;
-    case CallConv::X86_SPTR:  return 0;
-    case CallConv::RV64_SPTR:    return 0;
-    case CallConv::AArch64_SPTR: return 0;
+        default:
+            return 0;
+        case CallConv::X86_SPTR:
+            return 0;
+        case CallConv::RV64_SPTR:
+            return 0;
+        case CallConv::AArch64_SPTR:
+            return 0;
     }
 }
 
 Arch CallConv::ToArch() const {
     switch (*this) {
-    default: return Arch::INVALID;
-    case CallConv::X86_SPTR:  return Arch::X86;
-    case CallConv::RV64_SPTR:    return Arch::RV64;
-    case CallConv::AArch64_SPTR: return Arch::AArch64;
+        default:
+            return Arch::INVALID;
+        case CallConv::X86_SPTR:
+            return Arch::X86;
+        case CallConv::RV64_SPTR:
+            return Arch::RV64;
+        case CallConv::AArch64_SPTR:
+            return Arch::AArch64;
     }
 }
 
-using CPUStructEntry = std::tuple<unsigned, unsigned, ArchReg, Facet>;
+using CPUStructEntry = std::tuple<const char*, unsigned, unsigned, ArchReg, Facet>;
 
 // Note: replace with C++20 std::span.
-template<typename T>
+template <typename T>
 class span {
     T* ptr;
     std::size_t len;
-public:
+
+   public:
     constexpr span() : ptr(nullptr), len(0) {}
-    template<std::size_t N>
+    template <std::size_t N>
     constexpr span(T (&arr)[N]) : ptr(arr), len(N) {}
     constexpr std::size_t size() const { return len; }
     constexpr T* begin() const { return &ptr[0]; }
@@ -131,49 +151,48 @@ public:
 static span<const CPUStructEntry> CPUStructEntries(CallConv cconv) {
 #ifdef RELLUME_WITH_X86
     static const CPUStructEntry cpu_struct_entries_x86[] = {
-#define RELLUME_MAPPED_REG(nameu,off,reg,facet) \
-            std::make_tuple(SptrIdx::x86::nameu, off, reg, facet),
+#define RELLUME_MAPPED_REG(nameu, off, reg, facet) \
+    std::make_tuple(#nameu, SptrIdx::x86::nameu, off, reg, facet),
 #include <rellume/cpustruct-x86-private.inc>
 #undef RELLUME_MAPPED_REG
     };
-#endif // RELLUME_WITH_X86
+#endif  // RELLUME_WITH_X86
 
 #ifdef RELLUME_WITH_RV64
     static const CPUStructEntry cpu_struct_entries_rv64[] = {
-#define RELLUME_MAPPED_REG(nameu,off,reg,facet) \
-            std::make_tuple(SptrIdx::rv64::nameu, off, reg, facet),
+#define RELLUME_MAPPED_REG(nameu, off, reg, facet) \
+    std::make_tuple(#nameu, SptrIdx::rv64::nameu, off, reg, facet),
 #include <rellume/cpustruct-rv64-private.inc>
 #undef RELLUME_MAPPED_REG
     };
-#endif // RELLUME_WITH_RV64
+#endif  // RELLUME_WITH_RV64
 
 #ifdef RELLUME_WITH_AARCH64
     static const CPUStructEntry cpu_struct_entries_aarch64[] = {
-#define RELLUME_MAPPED_REG(nameu,off,reg,facet) \
-            std::make_tuple(SptrIdx::aarch64::nameu, off, reg, facet),
+#define RELLUME_MAPPED_REG(nameu, off, reg, facet) \
+    std::make_tuple(#nameu, SptrIdx::aarch64::nameu, off, reg, facet),
 #include <rellume/cpustruct-aarch64-private.inc>
 #undef RELLUME_MAPPED_REG
     };
-#endif // RELLUME_WITH_AARCH64
+#endif  // RELLUME_WITH_AARCH64
 
     switch (cconv) {
-    default:
-        return span<const CPUStructEntry>();
+        default:
+            return span<const CPUStructEntry>();
 #ifdef RELLUME_WITH_X86
-    case CallConv::X86_SPTR:
-        return cpu_struct_entries_x86;
-#endif // RELLUME_WITH_X86
+        case CallConv::X86_SPTR:
+            return cpu_struct_entries_x86;
+#endif  // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
-    case CallConv::RV64_SPTR:
-        return cpu_struct_entries_rv64;
-#endif // RELLUME_WITH_RV64
+        case CallConv::RV64_SPTR:
+            return cpu_struct_entries_rv64;
+#endif  // RELLUME_WITH_RV64
 #ifdef RELLUME_WITH_AARCH64
-    case CallConv::AArch64_SPTR:
-        return cpu_struct_entries_aarch64;
-#endif // RELLUME_WITH_AARCH64
+        case CallConv::AArch64_SPTR:
+            return cpu_struct_entries_aarch64;
+#endif  // RELLUME_WITH_AARCH64
     }
 }
-
 
 void CallConv::InitSptrs(ArchBasicBlock* bb, FunctionInfo& fi) {
     llvm::IRBuilder<> irb(bb->BeginBlock());
@@ -181,8 +200,8 @@ void CallConv::InitSptrs(ArchBasicBlock* bb, FunctionInfo& fi) {
 
     const auto& cpu_struct_entries = CPUStructEntries(*this);
     fi.sptr.resize(cpu_struct_entries.size());
-    for (const auto& [sptr_idx, off, reg, facet] : cpu_struct_entries)
-        fi.sptr[sptr_idx] = irb.CreateConstGEP1_64(i8, fi.sptr_raw, off);
+    for (const auto& [name, sptr_idx, off, reg, facet] : cpu_struct_entries)
+        fi.sptr[sptr_idx] = irb.CreateConstGEP1_64(i8, fi.sptr_raw, off, name);
 }
 
 static void Pack(ArchBasicBlock* bb, FunctionInfo& fi, llvm::Instruction* before) {
@@ -192,7 +211,7 @@ static void Pack(ArchBasicBlock* bb, FunctionInfo& fi, llvm::Instruction* before
     pack_info.bb = bb;
 }
 
-template<typename F>
+template <typename F>
 static void Unpack(CallConv cconv, ArchBasicBlock* bb, llvm::BasicBlock* llvmBlock, FunctionInfo& fi, F get_from_reg) {
     bb->InitEmpty(cconv.ToArch(), llvmBlock);
     // New regfile with everything cleared
@@ -200,7 +219,7 @@ static void Unpack(CallConv cconv, ArchBasicBlock* bb, llvm::BasicBlock* llvmBlo
     llvm::IRBuilder<> irb(regfile.GetInsertBlock());
 
     regfile.SetPC(irb.CreateLoad(irb.getInt64Ty(), fi.sptr_raw));
-    for (const auto& [sptr_idx, off, reg, facet] : CPUStructEntries(cconv)) {
+    for (const auto& [name, sptr_idx, off, reg, facet] : CPUStructEntries(cconv)) {
         if (reg.Kind() == ArchReg::RegKind::INVALID)
             continue;
         if (llvm::Value* reg_val = get_from_reg(reg)) {
@@ -224,7 +243,7 @@ llvm::ReturnInst* CallConv::Return(ArchBasicBlock* bb, FunctionInfo& fi) const {
 }
 
 void CallConv::UnpackParams(ArchBasicBlock* bb, FunctionInfo& fi) const {
-    Unpack(*this, bb, bb->BeginBlock(), fi, [&fi] (ArchReg reg) {
+    Unpack(*this, bb, bb->BeginBlock(), fi, [&fi](ArchReg reg) {
         return nullptr;
     });
 }
@@ -252,7 +271,7 @@ llvm::CallInst* CallConv::Call(llvm::Function* fn, ArchBasicBlock* bb,
         return call;
     }
 
-    Unpack(*this, bb, irb.GetInsertBlock(), fi, [] (ArchReg reg) {
+    Unpack(*this, bb, irb.GetInsertBlock(), fi, [](ArchReg reg) {
         return nullptr;
     });
 
@@ -277,7 +296,7 @@ void CallConv::OptimizePacks(FunctionInfo& fi, ArchBasicBlock* entry) {
                 pre |= bb_map.lookup(pred).second;
 
             RegisterSet post;
-            if (RegFile* rf = bb->GetRegFile()){
+            if (RegFile* rf = bb->GetRegFile()) {
                 if (rf->StartsClean())
                     post = rf->DirtyRegs();
                 else
@@ -312,7 +331,7 @@ void CallConv::OptimizePacks(FunctionInfo& fi, ArchBasicBlock* entry) {
             regset |= bb_map.lookup(pack.bb).first;
         llvm::IRBuilder<> irb(pack.packBefore);
         irb.CreateStore(regfile.GetPCValue(fi.pc_base_value, fi.pc_base_addr), fi.sptr_raw);
-        for (const auto& [sptr_idx, off, reg, facet] : CPUStructEntries(*this)) {
+        for (const auto& [name, sptr_idx, off, reg, facet] : CPUStructEntries(*this)) {
             if (reg.Kind() == ArchReg::RegKind::INVALID)
                 continue;
             unsigned regidx = RegisterSetBitIdx(reg);
@@ -347,7 +366,7 @@ void CallConv::OptimizePacks(FunctionInfo& fi, ArchBasicBlock* entry) {
 
             llvm::Value* reg_val = rf->GetReg(reg, facet);
             if (llvm::isa<llvm::UndefValue>(reg_val))
-                continue; // Just remove stores of undef.
+                continue;  // Just remove stores of undef.
             if (rf != &regfile) {
                 auto terminator = rf->GetInsertBlock()->getTerminator();
                 new llvm::StoreInst(reg_val, fi.sptr[sptr_idx], terminator);
@@ -358,4 +377,4 @@ void CallConv::OptimizePacks(FunctionInfo& fi, ArchBasicBlock* entry) {
     }
 }
 
-} // namespace
+}  // namespace rellume
