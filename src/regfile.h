@@ -79,7 +79,7 @@ public:
 
     static const ArchReg INVALID;
     static const ArchReg ZF, SF, PF, CF, OF, AF, DF;
-    // x86-64-specific names ignored by other archs
+    // x86-specific names ignored by other archs
     static const ArchReg RAX, RCX, RDX, RBX, RSP, RBP, RSI, RDI;
 
     // AArch64-specific names

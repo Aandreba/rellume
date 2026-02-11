@@ -32,6 +32,7 @@ if __name__ == "__main__":
     off = 0
     for entry in desc:
         if off % entry["size"]:
+            print(off, entry)
             raise Exception("misaligned cpu struct entry {}".format(entry))
         entry["offset"] = off
         if "name" in entry:

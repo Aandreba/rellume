@@ -396,7 +396,7 @@ bool Lifter::Lift(const Instr& inst) {
             SetIP(inst.start() + rvi->imm);
         StoreGp(rvi->rd, ret_addr);
 
-        // For discussion, see x86-64 lifting of call/ret.
+        // For discussion, see x86 lifting of call/ret.
         if (cfg.call_function) {
             bool rdl = rvi->rd == 1 || rvi->rd == 5;
             bool rs1l = rvi->rs1 == 1 || rvi->rs1 == 5;

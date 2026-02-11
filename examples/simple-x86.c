@@ -27,28 +27,23 @@ int main(void) {
     // Create LLVM module
     LLVMModuleRef mod = LLVMModuleCreateWithName("lifter");
 
-    LLVMValueRef pcbase = LLVMAddGlobal(mod, LLVMInt8Type(), "pcbase");
-    LLVMValueRef pcbase_val = LLVMConstPtrToInt(pcbase, LLVMInt64Type());
-
     static const unsigned char code[] = {
-        0x48, 0x8B, 0x0D, 0x00, 0x00, 0x34, 0x12, // mov rcx, [rip+0x12340000]
-        0x48, 0x8D, 0x05, 0x00, 0x00, 0x34, 0x12, // lea rax, [rip+0x12340000]
-        0x7d, 0xf0,                               // jge $-16
-        0x0f, 0x02,                                     // ret
-        0xc3,                                     // ret
+        0x48, 0x89, 0xf8, // mov rax,rdi
+        0x48, 0x39, 0xf7, // cmp rdi,rsi
+        0x7d, 0x03,       // jge $+3
+        0x48, 0x89, 0xf0, // mov rax,rsi
+        0xc3,             // ret
     };
 
     // Create function for lifting
     LLConfig* cfg = ll_config_new();
-    ll_config_set_architecture(cfg, "x86-64");
+    ll_config_set_architecture(cfg, "x86");
     ll_config_set_call_ret_clobber_flags(cfg, true);
-    ll_config_set_pc_base(cfg, 0, pcbase_val);
     LLFunc* fn = ll_func_new(mod, cfg);
     // Lift the whole function by following all direct jumps
     ll_func_decode_cfg(fn, (uintptr_t) code, NULL, NULL);
     LLVMValueRef llvm_fn = ll_func_lift(fn);
-    (void) llvm_fn;
-    LLVMDumpModule(mod);
+    LLVMDumpValue(llvm_fn);
 
     return 0;
 }

@@ -107,12 +107,12 @@ void ll_config_set_use_native_segment_base(LLConfig* cfg, bool enable) {
 void ll_config_enable_full_facets(LLConfig* cfg, bool enable) {
 }
 bool ll_config_set_architecture(LLConfig* cfg, const char *s) {
-    if (!strcmp(s, "x86-64") || !strcmp(s, "x86_64")) {
-#ifdef RELLUME_WITH_X86_64
-        unwrap(cfg)->arch = rellume::Arch::X86_64;
-        unwrap(cfg)->callconv = rellume::CallConv::X86_64_SPTR;
+    if (!strcmp(s, "x86") || !strcmp(s, "x86_64")) {
+#ifdef RELLUME_WITH_X86
+        unwrap(cfg)->arch = rellume::Arch::X86;
+        unwrap(cfg)->callconv = rellume::CallConv::X86_SPTR;
         return true;
-#endif // RELLUME_WITH_X86_64
+#endif // RELLUME_WITH_X86
     } else if (!strcmp(s, "rv64")) {
 #ifdef RELLUME_WITH_RV64
         unwrap(cfg)->arch = rellume::Arch::RV64;

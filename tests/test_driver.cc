@@ -32,7 +32,7 @@ static bool opt_verbose = false;
 static bool opt_jit = false;
 static bool opt_pic = false;
 static bool opt_overflow_intrinsics = false;
-static const char* opt_arch = "x86_64";
+static const char* opt_arch = "x86";
 
 struct HexBuffer {
     uint8_t* buf;
@@ -62,13 +62,13 @@ class TestCase {
 
     TestCase(std::ostringstream& diagnostic) : diagnostic(diagnostic) {
         static std::unordered_map<std::string,RegEntry> regs_empty = {};
-#ifdef RELLUME_WITH_X86_64
-        static std::unordered_map<std::string,RegEntry> regs_x86_64 = {
+#ifdef RELLUME_WITH_X86
+        static std::unordered_map<std::string,RegEntry> regs_x86 = {
 #define RELLUME_NAMED_REG(name,nameu,sz,off) {#name, {sz, off}},
-#include <rellume/cpustruct-x86_64-private.inc>
+#include <rellume/cpustruct-x86-private.inc>
 #undef RELLUME_NAMED_REG
         };
-#endif // RELLUME_WITH_X86_64
+#endif // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
         static std::unordered_map<std::string,RegEntry> regs_rv64 = {
 #define RELLUME_NAMED_REG(name,nameu,sz,off) {#name, {sz, off}},
@@ -85,10 +85,10 @@ class TestCase {
 #endif // RELLUME_WITH_AARCH64
 
         regs = &regs_empty;
-#ifdef RELLUME_WITH_X86_64
-        if (!strcmp(opt_arch, "x86_64"))
-            regs = &regs_x86_64;
-#endif // RELLUME_WITH_X86_64
+#ifdef RELLUME_WITH_X86
+        if (!strcmp(opt_arch, "x86"))
+            regs = &regs_x86;
+#endif // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
         if (!strcmp(opt_arch, "rv64"))
             regs = &regs_rv64;
@@ -124,7 +124,7 @@ class TestCase {
             buf[i] = std::strtoul(hex_byte, nullptr, 16);
         }
 
-        if (!strcmp(opt_arch, "x86_64") && reg == "pf") {
+        if (!strcmp(opt_arch, "x86") && reg == "pf") {
             buf[0] = !buf[0]; // value 1 => actual PF=0; value 0 => PF=1
         }
 
@@ -136,7 +136,7 @@ class TestCase {
         uint8_t* expected_bytes = expected + entry.offset;
         uint8_t* state_bytes = state + entry.offset;
 
-        if (!strcmp(opt_arch, "x86_64") && reg == "pf") {
+        if (!strcmp(opt_arch, "x86") && reg == "pf") {
             bool expected_val = (__builtin_popcount(expected_bytes[0]) & 1) == 0;
             bool state_val = (__builtin_popcount(state_bytes[0]) & 1) == 0;
             if (expected_val == state_val)

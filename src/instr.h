@@ -24,9 +24,9 @@
 #ifndef RELLUME_INSTR_H
 #define RELLUME_INSTR_H
 
-#ifdef RELLUME_WITH_X86_64
+#ifdef RELLUME_WITH_X86
 #include <fadec.h>
-#endif // RELLUME_WITH_X86_64
+#endif // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
 #include <frvdec.h>
 #endif // RELLUME_WITH_RV64
@@ -48,9 +48,9 @@ class Instr {
     unsigned char instlen;
     uint64_t addr;
     union {
-#ifdef RELLUME_WITH_X86_64
-        FdInstr x86_64;
-#endif // RELLUME_WITH_X86_64
+#ifdef RELLUME_WITH_X86
+        FdInstr x86;
+#endif // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
         FrvInst rv64;
 #endif // RELLUME_WITH_RV64
@@ -61,7 +61,7 @@ class Instr {
 
 public:
 
-#ifdef RELLUME_WITH_X86_64
+#ifdef RELLUME_WITH_X86
     using Type = FdInstrType;
     struct Reg {
         uint16_t rt;
@@ -115,14 +115,14 @@ public:
         unsigned addrsz() const { assert(is_mem()); return FD_ADDRSIZE(fdi); }
     };
 
-    Type type() const { return FD_TYPE(&x86_64); }
-    unsigned addrsz() const { return FD_ADDRSIZE(&x86_64); }
-    unsigned opsz() const { return FD_OPSIZE(&x86_64); }
-    const Op op(unsigned idx) const { return Op{&x86_64, idx}; }
-    bool has_rep() const { return FD_HAS_REP(&x86_64); }
-    bool has_repnz() const { return FD_HAS_REPNZ(&x86_64); }
-    bool has_lock() const { return FD_HAS_LOCK(&x86_64); }
-#endif // RELLUME_WITH_X86_64
+    Type type() const { return FD_TYPE(&x86); }
+    unsigned addrsz() const { return FD_ADDRSIZE(&x86); }
+    unsigned opsz() const { return FD_OPSIZE(&x86); }
+    const Op op(unsigned idx) const { return Op{&x86, idx}; }
+    bool has_rep() const { return FD_HAS_REP(&x86); }
+    bool has_repnz() const { return FD_HAS_REPNZ(&x86); }
+    bool has_lock() const { return FD_HAS_LOCK(&x86); }
+#endif // RELLUME_WITH_X86
 
 
     size_t len() const { return instlen; }
@@ -150,11 +150,11 @@ public:
         this->addr = addr;
         int res = -1;
         switch (arch) {
-#ifdef RELLUME_WITH_X86_64
-        case Arch::X86_64:
-            res = fd_decode(buf, len, /*mode=*/64, /*addr=*/0, &x86_64);
+#ifdef RELLUME_WITH_X86
+        case Arch::X86:
+            res = fd_decode(buf, len, /*mode=*/64, /*addr=*/0, &x86);
             break;
-#endif // RELLUME_WITH_X86_64
+#endif // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
         case Arch::RV64:
             res = frv_decode(len, buf, FRV_RV64, &rv64);

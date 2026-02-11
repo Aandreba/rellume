@@ -23,7 +23,7 @@ class Assembler:
         self.proc.stdin.write("!ASM " + code + "\n")
         self.proc.stdin.flush()
         res = bytes.fromhex(self.proc.stdout.readline().strip())
-        if self.arch == "x86_64":
+        if self.arch == "x86":
             return res, b"\xcc" # term: int 3
         if self.arch == "rv64":
             return res, b"\x73\x00\x10\x00"
@@ -55,7 +55,7 @@ def parse_case(case, asm=None):
                 raise Exception("code in post-check")
             code, term = asm.assemble(val)
             pre.append("m1000000=" + code.hex() + term.hex())
-            ripstr = "rip=" if asm.arch == "x86_64" or asm.arch == "rv64" else "pc="
+            ripstr = "rip=" if asm.arch == "x86" or asm.arch == "rv64" else "pc="
             pre.append(ripstr + struct.pack("<Q", 0x1000000).hex())
             post.append(ripstr + struct.pack("<Q", 0x1000000 + len(code)).hex())
             continue

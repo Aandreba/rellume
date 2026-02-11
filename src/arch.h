@@ -29,9 +29,9 @@ namespace rellume {
 
 enum class Arch : unsigned {
     INVALID,
-#ifdef RELLUME_WITH_X86_64
-    X86_64, // x86-64 (Intel 64, actually)
-#endif // RELLUME_WITH_X86_64
+#ifdef RELLUME_WITH_X86
+    X86, // x86 (Intel 64, actually)
+#endif // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
     RV64, // RISC-V, 64 bit
 #endif // RELLUME_WITH_RV64
@@ -40,12 +40,12 @@ enum class Arch : unsigned {
 #endif // RELLUME_WITH_AARCH64
 
     // Backwards compatibility: if no architecture is specified explicitly,
-    // Rellume defaults to x86-64.
-#ifdef RELLUME_WITH_X86_64
-    DEFAULT = X86_64
-#else // !RELLUME_WITH_X86_64
+    // Rellume defaults to x86.
+#ifdef RELLUME_WITH_X86
+    DEFAULT = X86
+#else // !RELLUME_WITH_X86
     DEFAULT = INVALID
-#endif // RELLUME_WITH_X86_64
+#endif // RELLUME_WITH_X86
 };
 
 } // namespace rellume

@@ -30,11 +30,11 @@ add_project_arguments(['-DLL_LLVM_MAJOR='+libllvm.version().split('.')[0]], lang
 
 architectures = []
 archdeps = []
-if get_option('with_x86_64')
+if get_option('with_x86')
   archdeps += dependency('fadec', static: true,
                          fallback: ['fadec', 'fadec'],
-                         default_options: ['archmode=only64'])
-  architectures += 'x86_64'
+                         default_options: ['archmode=only32'])
+  architectures += 'x86'
 endif
 if get_option('with_rv64')
   archdeps += dependency('frvdec', static: true,

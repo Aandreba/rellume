@@ -21,8 +21,8 @@
  * \file
  **/
 
-#include "x86-64/lifter.h"
-#include "x86-64/lifter-private.h"
+#include "x86/lifter.h"
+#include "x86/lifter-private.h"
 
 #include "arch.h"
 #include "facet.h"
@@ -38,7 +38,7 @@
  * @{
  **/
 
-namespace rellume::x86_64 {
+namespace rellume::x86 {
 
 bool LiftInstruction(const Instr& inst, FunctionInfo& fi, const LLConfig& cfg,
                      ArchBasicBlock& ab) noexcept {
@@ -457,7 +457,7 @@ bool Lifter::Lift(const Instr& inst) {
     return true;
 }
 
-} // namespace rellume::x86_64
+} // namespace rellume::x86
 
 /**
  * @}

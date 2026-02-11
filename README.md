@@ -1,6 +1,6 @@
 # Rellume — Lift machine code to LLVM IR
 
-Rellume is a lifter for x86-64/AArch64/RISC-V64 machine code to LLVM IR with focus on the performance of the lifted code. The generated LLVM IR can be compiled and executed again, for example using LLVM's JIT compiler, ideally having the same (or even better) performance as the original code. Special care is taken to model the SIMD instructions and pointers in a way that the optimizer can generate efficient code. The lifter operates on a set of specified instructions (or decodes the control flow automatically) and creates an LLVM-IR function with the same semantics. These functions operate on a generic structure containing the virtual CPU state, but can be wrapped for an arbitrary calling convention.
+Rellume is a lifter for x86/AArch64/RISC-V64 machine code to LLVM IR with focus on the performance of the lifted code. The generated LLVM IR can be compiled and executed again, for example using LLVM's JIT compiler, ideally having the same (or even better) performance as the original code. Special care is taken to model the SIMD instructions and pointers in a way that the optimizer can generate efficient code. The lifter operates on a set of specified instructions (or decodes the control flow automatically) and creates an LLVM-IR function with the same semantics. These functions operate on a generic structure containing the virtual CPU state, but can be wrapped for an arbitrary calling convention.
 
 ### Use Cases
 - Binary rewriting:

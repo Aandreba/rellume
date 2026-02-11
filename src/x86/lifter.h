@@ -31,12 +31,12 @@ struct FunctionInfo;
 class Instr;
 struct LLConfig;
 
-namespace x86_64 {
+namespace x86 {
 
 bool LiftInstruction(const Instr& inst, FunctionInfo& fi, const LLConfig& cfg,
                      ArchBasicBlock& ab) noexcept;
 
-} // namespace rellume::x86_64
+} // namespace rellume::x86
 
 } // namespace rellume
 

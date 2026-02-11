@@ -372,7 +372,7 @@ bool Lifter::Lift(const Instr& inst) {
             CallExternalFunction(cfg.call_function);
 
             // The external function call may manipulate the PC in non-obvious ways (e.g. exceptions).
-            // See also the comment in the x86_64 LiftCall method.
+            // See also the comment in the x86 LiftCall method.
             SetIPCallret(inst.end());
         }
         return true;

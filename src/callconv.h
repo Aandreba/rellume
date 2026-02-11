@@ -42,13 +42,13 @@ struct FunctionInfo;
 
 class CallConv {
 public:
-    /// HHVM: x86_64 calling convention that uses many registers for passing arguments
+    /// HHVM: x86 calling convention that uses many registers for passing arguments
     /// and return values. See LLVM documentation on that topic.
     ///
     /// SPTR: Cdecl callconv with one argument, the CPU struct pointer (sptr). See
     /// FunctionInfo.
     enum Value {
-        INVALID, X86_64_SPTR, RV64_SPTR, AArch64_SPTR,
+        INVALID, X86_SPTR, RV64_SPTR, AArch64_SPTR,
     };
 
     static CallConv FromFunction(llvm::Function* fn, Arch arch);

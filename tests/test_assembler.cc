@@ -75,16 +75,16 @@ int main(int argc, char** argv) {
     }
 
     if (false) {
-#ifdef TARGET_X86_64
-    } else if (!strcmp(argv[1], "x86_64")) {
-        triplestr = "x86_64-linux-gnu";
+#ifdef TARGET_X86
+    } else if (!strcmp(argv[1], "x86")) {
+        triplestr = "i386-linux-gnu";
         cpufeatures = "+nopl";
         dialect = 1;
         LLVMInitializeX86TargetInfo();
         LLVMInitializeX86Target();
         LLVMInitializeX86TargetMC();
         LLVMInitializeX86AsmParser();
-#endif // TARGET_X86_64
+#endif // TARGET_X86
 #ifdef TARGET_RV64
     } else if (!strcmp(argv[1], "rv64")) {
         triplestr = "riscv64-unknown-linux-gnu";

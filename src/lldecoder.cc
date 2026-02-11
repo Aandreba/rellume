@@ -45,8 +45,8 @@ enum class InstrKind {
 std::pair<InstrKind, uint64_t> classifyInstr(Arch arch, const Instr& inst) {
     std::uint64_t branch_target = 0;
     switch (arch) {
-#ifdef RELLUME_WITH_X86_64
-    case Arch::X86_64:
+#ifdef RELLUME_WITH_X86
+    case Arch::X86:
         switch (inst.type()) {
         default:
             return {InstrKind::OTHER, 0};
@@ -88,7 +88,7 @@ std::pair<InstrKind, uint64_t> classifyInstr(Arch arch, const Instr& inst) {
         case FDI_HLT:
             return {InstrKind::UNKNOWN, 0};
         }
-#endif // RELLUME_WITH_X86_64
+#endif // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
     case Arch::RV64: {
         const FrvInst* rv64 = inst;

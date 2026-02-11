@@ -21,7 +21,7 @@
  * \file
  **/
 
-#include "x86-64/lifter-private.h"
+#include "x86/lifter-private.h"
 
 #include "instr.h"
 #include "regfile.h"
@@ -39,7 +39,7 @@
  * @{
  **/
 
-namespace rellume::x86_64 {
+namespace rellume::x86 {
 
 void Lifter::FlagCalcSAPLogic(llvm::Value* res) {
     regfile->Set(ArchReg::SF, RegFile::Transform::IsNeg, res);
@@ -131,7 +131,7 @@ void Lifter::FlagFromReg(llvm::Value* val) {
     }
 }
 
-} // namespace::x86_64
+} // namespace::x86
 
 /**
  * @}

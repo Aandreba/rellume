@@ -21,7 +21,7 @@
  * \file
  **/
 
-#include "x86-64/lifter-private.h"
+#include "x86/lifter-private.h"
 
 #include "callconv.h"
 #include "facet.h"
@@ -43,7 +43,7 @@
  * @{
  **/
 
-namespace rellume::x86_64 {
+namespace rellume::x86 {
 
 ArchReg Lifter::MapReg(const Instr::Reg reg) {
     assert(reg.rt != FD_RT_GPL || reg.ri != FD_REG_IP);
@@ -81,8 +81,8 @@ llvm::Value* Lifter::OpAddr(const Instr::Op op, llvm::Type* element_type,
             if (cfg.use_native_segment_base) {
                 addrspace = seg == FD_REG_FS ? 257 : 256;
             } else {
-                unsigned idx = seg == FD_REG_FS ? SptrIdx::x86_64::FSBASE
-                                                : SptrIdx::x86_64::GSBASE;
+                unsigned idx = seg == FD_REG_FS ? SptrIdx::x86::FSBASE
+                                                : SptrIdx::x86::GSBASE;
                 auto base = irb.CreateLoad(irb.getInt64Ty(), fi.sptr[idx]);
                 res = irb.CreateAdd(res, base);
             }
@@ -239,7 +239,7 @@ llvm::Value* Lifter::StackPop(const ArchReg sp_src_reg) {
     return irb.CreateLoad(irb.getInt64Ty(), rsp);
 }
 
-} // namespace rellume::x86_64
+} // namespace rellume::x86
 
 /**
  * @}

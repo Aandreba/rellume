@@ -21,7 +21,7 @@
  * \file
  **/
 
-#include "x86-64/lifter-private.h"
+#include "x86/lifter-private.h"
 
 #include "facet.h"
 #include "instr.h"
@@ -39,7 +39,7 @@
  * @{
  **/
 
-namespace rellume::x86_64 {
+namespace rellume::x86 {
 
 void Lifter::LiftMovgp(const Instr& inst) {
     // TODO: if the instruction moves the whole register, keep all facets.
@@ -506,7 +506,7 @@ void Lifter::LiftBitscan(const Instr& inst, bool trailing) {
     if (!trailing)
         res = irb.CreateSub(irb.getIntN(sz, sz - 1), res);
     // BSF/BSR don't modify dest if src is zero. This is specified on AMD, and
-    // Intel apparently behaves similar on all x86-64 implementations. There is
+    // Intel apparently behaves similar on all x86 implementations. There is
     // also no zero extension of 32-bit operands.
     // See: https://sourceware.org/bugzilla/show_bug.cgi?id=31748
     llvm::Value* eq = irb.CreateIsNull(src);
@@ -935,7 +935,7 @@ void Lifter::LiftCmps(const Instr& inst) {
     RepEnd(rep_info, src, dst); // NOTE: this modifies control flow!
 }
 
-} // namespace::x86_64
+} // namespace::x86
 
 /**
  * @}

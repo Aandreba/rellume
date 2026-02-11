@@ -21,7 +21,7 @@
  * \file
  **/
 
-#include "x86-64/lifter-private.h"
+#include "x86/lifter-private.h"
 
 #include "facet.h"
 #include "instr.h"
@@ -38,7 +38,7 @@
  * @{
  **/
 
-namespace rellume::x86_64 {
+namespace rellume::x86 {
 
 void Lifter::LiftFence(const Instr& inst) {
     // TODO: distinguish also lfence and sfence.
@@ -733,7 +733,7 @@ void Lifter::LiftSsePmovx(const Instr& inst, llvm::Instruction::CastOps ext,
     OpStoreVec(inst.op(0), irb.CreateCast(ext, src, dst_ty));
 }
 
-} // namespace::x86_64
+} // namespace::x86
 
 /**
  * @}

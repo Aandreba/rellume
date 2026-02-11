@@ -60,7 +60,7 @@ struct LLConfig {
     Arch arch = Arch::DEFAULT;
 
     /// Optimize generated IR for the HHVM calling convention.
-    CallConv callconv = CallConv::X86_64_SPTR;
+    CallConv callconv = CallConv::X86_SPTR;
     /// Address space for CPU struct pointer parameter
     unsigned sptr_addrspace = 0;
 
@@ -98,7 +98,7 @@ struct LLConfig {
     /// Function for querying CPU information. The signature is
     /// architecture-specific.
     ///
-    /// For x86-64: this is used for CPUID with the following signature:
+    /// For x86: this is used for CPUID with the following signature:
     ///     { i64 (ecx:eax), i64 (ebx:edx) } (i32 %eax, i32 %ecx)
     llvm::Function* cpuinfo_function = nullptr;
 

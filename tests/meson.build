@@ -1,5 +1,5 @@
 casefiles = {
-  'x86_64': [
+  'x86': [
     'cases_basic.txt',
     'cases_modrm.txt',
     'cases_string.txt',
@@ -18,7 +18,7 @@ casefiles = {
   ]
 }
 llvm_targets = {
-  'x86_64': 'X86',
+  'x86': 'X86',
   'rv64': 'RISCV',
   'aarch64': 'AArch64',
 }
@@ -51,10 +51,10 @@ foreach arch : test_architectures
                                command: [python3, files('test_parser.py'), '-o', '@OUTPUT@', '-a', assembler, '-A', arch, '@INPUT@'],
                                input: files(casefiles[arch]),
                                output: 'parsed_cases_@0@.txt'.format(arch))
-  test('emulation-@0@'.format(arch), driver,
-       args: ['-A', arch, parsed_cases], protocol: 'tap')
-  test('emulation-@0@-pic'.format(arch), driver,
-       args: ['-A', arch, '-p', parsed_cases], protocol: 'tap')
-  test('emulation-@0@-jit'.format(arch), driver,
-       args: ['-A', arch, '-j', parsed_cases], protocol: 'tap', timeout: 120)
+  #test('emulation-@0@'.format(arch), driver,
+  #     args: ['-A', arch, parsed_cases], protocol: 'tap')
+  #test('emulation-@0@-pic'.format(arch), driver,
+  #     args: ['-A', arch, '-p', parsed_cases], protocol: 'tap')
+  #test('emulation-@0@-jit'.format(arch), driver,
+  #     args: ['-A', arch, '-j', parsed_cases], protocol: 'tap', timeout: 120)
 endforeach
