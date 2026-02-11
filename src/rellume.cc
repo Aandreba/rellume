@@ -23,11 +23,6 @@
 
 #include "rellume/rellume.h"
 
-#include "callconv.h"
-#include "config.h"
-#include "function.h"
-#include "instr.h"
-
 #include <llvm-c/Core.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Value.h>
@@ -36,6 +31,11 @@
 #include <cstdint>
 #include <cstring>
 
+#include "callconv.h"
+#include "config.h"
+#include "function.h"
+#include "instr.h"
+
 namespace {
 static rellume::LLConfig* unwrap(LLConfig* fn) {
     return reinterpret_cast<rellume::LLConfig*>(fn);
@@ -43,7 +43,7 @@ static rellume::LLConfig* unwrap(LLConfig* fn) {
 static rellume::Function* unwrap(LLFunc* fn) {
     return reinterpret_cast<rellume::Function*>(fn);
 }
-} // namespace
+}  // namespace
 
 LLConfig* ll_config_new(void) {
     return reinterpret_cast<LLConfig*>(new rellume::LLConfig());
@@ -92,7 +92,7 @@ void ll_config_set_cpuinfo_func(LLConfig* cfg, LLVMValueRef value) {
     llvm::Value* uw_value = llvm::unwrap(value);
     unwrap(cfg)->cpuinfo_function = llvm::cast_or_null<llvm::Function>(uw_value);
 }
-void ll_config_set_rdtsc_function(LLConfig* cfg, LLVMValueRef value) {
+void ll_config_set_rdtsc_func(LLConfig* cfg, LLVMValueRef value) {
     llvm::Value* uw_value = llvm::unwrap(value);
     unwrap(cfg)->rdtsc_function = llvm::cast_or_null<llvm::Function>(uw_value);
 }
@@ -110,25 +110,25 @@ void ll_config_set_use_native_segment_base(LLConfig* cfg, bool enable) {
 }
 void ll_config_enable_full_facets(LLConfig* cfg, bool enable) {
 }
-bool ll_config_set_architecture(LLConfig* cfg, const char *s) {
+bool ll_config_set_architecture(LLConfig* cfg, const char* s) {
     if (!strcmp(s, "x86") || !strcmp(s, "x86_64")) {
 #ifdef RELLUME_WITH_X86
         unwrap(cfg)->arch = rellume::Arch::X86;
         unwrap(cfg)->callconv = rellume::CallConv::X86_SPTR;
         return true;
-#endif // RELLUME_WITH_X86
+#endif  // RELLUME_WITH_X86
     } else if (!strcmp(s, "rv64")) {
 #ifdef RELLUME_WITH_RV64
         unwrap(cfg)->arch = rellume::Arch::RV64;
         unwrap(cfg)->callconv = rellume::CallConv::RV64_SPTR;
         return true;
-#endif // RELLUME_WITH_RV64
+#endif  // RELLUME_WITH_RV64
     } else if (!strcmp(s, "aarch64")) {
 #ifdef RELLUME_WITH_AARCH64
         unwrap(cfg)->arch = rellume::Arch::AArch64;
         unwrap(cfg)->callconv = rellume::CallConv::AArch64_SPTR;
         return true;
-#endif // RELLUME_WITH_AARCH64
+#endif  // RELLUME_WITH_AARCH64
     }
     return false;
 }
