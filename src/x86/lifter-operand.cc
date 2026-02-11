@@ -60,13 +60,12 @@ llvm::Value* Lifter::OpAddr(const Instr::Op op, llvm::Type* element_type,
                                 unsigned seg) {
     if (seg == 7)
         seg = op.seg();
-    if (seg == FD_REG_FS || seg == FD_REG_GS || op.addrsz() != 8) {
+    if (seg != FD_REG_NONE) {
         // For segment offsets, use inttoptr because the pointer base is stored
         // in the segment register. (And LLVM has some problems with addrspace
         // casts between pointers.) For 32-bit address size, we can't normal
         // pointers, so use integer arithmetic directly.
-        Facet addrsz_facet = op.addrsz() == 8 ? Facet::I64 : Facet::I32;
-
+        Facet addrsz_facet = Facet::I32;
         llvm::Value* res = irb.getIntN(8 * op.addrsz(), op.off());
         if (op.base())
             res = irb.CreateAdd(res, GetReg(MapReg(op.base()), addrsz_facet));
@@ -77,16 +76,32 @@ llvm::Value* Lifter::OpAddr(const Instr::Op op, llvm::Type* element_type,
         }
 
         int addrspace = 0;
-        if (seg == FD_REG_FS || seg == FD_REG_GS) {
-            if (cfg.use_native_segment_base) {
-                addrspace = seg == FD_REG_FS ? 257 : 256;
-            } else {
-                unsigned idx = seg == FD_REG_FS ? SptrIdx::x86::FSBASE
-                                                : SptrIdx::x86::GSBASE;
-                auto base = irb.CreateLoad(irb.getInt64Ty(), fi.sptr[idx]);
-                res = irb.CreateAdd(res, base);
-            }
+        unsigned idx;
+        switch (seg) {
+            case FD_REG_CS:
+                idx = SptrIdx::x86::CSBASE;
+                break;
+            case FD_REG_DS:
+                idx = SptrIdx::x86::DSBASE;
+                break;
+            case FD_REG_ES:
+                idx = SptrIdx::x86::ESBASE;
+                break;
+            case FD_REG_SS:
+                idx = SptrIdx::x86::SSBASE;
+                break;
+            case FD_REG_FS:
+                idx = SptrIdx::x86::FSBASE;
+                break;
+            case FD_REG_GS:
+                idx = SptrIdx::x86::GSBASE;
+                break;
+            default:
+                return nullptr;
         }
+
+        auto base = irb.CreateLoad(irb.getInt64Ty(), fi.sptr[idx]);
+        res = irb.CreateAdd(res, base);
 
         res = irb.CreateZExt(res, irb.getInt64Ty());
         return irb.CreateIntToPtr(res, irb.getPtrTy(addrspace));
@@ -107,7 +122,7 @@ llvm::Value* Lifter::OpAddr(const Instr::Op op, llvm::Type* element_type,
     if (op.base()) {
         base = GetReg(MapReg(op.base()), Facet::PTR);
         if (llvm::isa<llvm::Constant>(base)) {
-            llvm::Value* base_int = GetReg(MapReg(op.base()), Facet::I64);
+            llvm::Value* base_int = irb.CreateZExt(GetReg(MapReg(op.base()), Facet::I32), irb.getInt64Ty());
             base_int = irb.CreateAdd(base_int, irb.getInt64(op.off()));
             if (auto* addr = llvm::dyn_cast<llvm::ConstantInt>(base_int)) {
                 base = AddrConst(addr->getZExtValue());
@@ -130,7 +145,7 @@ llvm::Value* Lifter::OpAddr(const Instr::Op op, llvm::Type* element_type,
         if (auto constval = llvm::dyn_cast<llvm::Constant>(base))
             use_mul = constval->isNullValue();
 
-        llvm::Value* offset = GetReg(MapReg(op.index()), Facet::I64);
+        llvm::Value* offset = irb.CreateZExt(GetReg(MapReg(op.index()), Facet::I32), irb.getInt64Ty());
         if (use_mul) {
             base = irb.CreateMul(offset, irb.getInt64(op.scale()));
             base = irb.CreateIntToPtr(base, irb.getPtrTy());
@@ -184,9 +199,9 @@ void Lifter::StoreGpFacet(ArchReg reg, Facet facet, llvm::Value* value) {
 
     if (facet == Facet::I8H) {
         uint64_t mask = 0xffffffffffff00ff;
-        llvm::Value* maskedOld = irb.CreateAnd(GetReg(reg, Facet::I64), mask);
+        llvm::Value* maskedOld = irb.CreateAnd(GetReg(reg, Facet::I32), mask);
 
-        value = irb.CreateShl(irb.CreateZExt(value, irb.getInt64Ty()), 8);
+        value = irb.CreateShl(irb.CreateZExt(value, irb.getInt32Ty()), 8);
         SetReg(reg, irb.CreateOr(value, maskedOld));
     } else if (facet == Facet::I8 || facet == Facet::I16) {
         regfile->Merge(reg, value);

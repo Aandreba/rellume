@@ -196,13 +196,13 @@ public:
             : irb(bb), dirty_regs() {
         switch (arch) {
 #ifdef RELLUME_WITH_X86
-        case Arch::X86: ivec_facet = Facet::V2I64; break;
+        case Arch::X86: ivec_facet = Facet::V2I64; gpr_facet = Facet::I32; break;
 #endif // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
-        case Arch::RV64: ivec_facet = Facet::I64; break;
+        case Arch::RV64: ivec_facet = Facet::I64; gpr_facet = Facet::I64; break;
 #endif // RELLUME_WITH_RV64
 #ifdef RELLUME_WITH_AARCH64
-        case Arch::AArch64: ivec_facet = Facet::V2I64; break;
+        case Arch::AArch64: ivec_facet = Facet::V2I64; gpr_facet = Facet::I64; break;
 #endif // RELLUME_WITH_AARCH64
         default: assert(false);
         }
@@ -275,6 +275,7 @@ private:
     std::vector<PhiDesc>* phiDescs = nullptr;
 
     Facet ivec_facet;
+    Facet gpr_facet;
 
     RegisterSet dirty_regs;
 
@@ -314,7 +315,7 @@ Register* RegFile::impl::AccessReg(ArchReg reg) {
 Facet RegFile::impl::NativeFacet(ArchReg reg) {
     switch (reg.Kind()) {
     case ArchReg::RegKind::GP:
-        return Facet::I64;
+        return gpr_facet;
     case ArchReg::RegKind::FLAG:
         if (reg == ArchReg::PF)
             return Facet::I8;

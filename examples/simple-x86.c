@@ -27,12 +27,20 @@ int main(void) {
     // Create LLVM module
     LLVMModuleRef mod = LLVMModuleCreateWithName("lifter");
 
+    // static const unsigned char code[] = {
+    //     0x48, 0x89, 0xf8, // mov rax,rdi
+    //     0x48, 0x39, 0xf7, // cmp rdi,rsi
+    //     0x7d, 0x03,       // jge $+3
+    //     0x48, 0x89, 0xf0, // mov rax,rsi
+    //     0xc3,             // ret
+    // };
+
     static const unsigned char code[] = {
-        0x48, 0x89, 0xf8, // mov rax,rdi
-        0x48, 0x39, 0xf7, // cmp rdi,rsi
-        0x7d, 0x03,       // jge $+3
-        0x48, 0x89, 0xf0, // mov rax,rsi
-        0xc3,             // ret
+        0x8b, 0x54, 0x24, 0x04, // mov    edx,DWORD PTR [esp+0x4]
+        0x8b, 0x4c, 0x24, 0x08, // mov    ecx,DWORD PTR [esp+0x8]
+        0x8b, 0x02,             // mov    eax,DWORD PTR [edx]
+        0x03, 0x04, 0x8a,       // add    eax,DWORD PTR [edx+ecx*4]
+        0xc3,                   // ret
     };
 
     // Create function for lifting
