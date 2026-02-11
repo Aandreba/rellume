@@ -26,13 +26,13 @@
 
 #ifdef RELLUME_WITH_X86
 #include <fadec.h>
-#endif // RELLUME_WITH_X86
+#endif  // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
 #include <frvdec.h>
-#endif // RELLUME_WITH_RV64
+#endif  // RELLUME_WITH_RV64
 #ifdef RELLUME_WITH_AARCH64
 #include <farmdec.h>
-#endif // RELLUME_WITH_AARCH64
+#endif  // RELLUME_WITH_AARCH64
 
 #include <cassert>
 #include <cstdbool>
@@ -50,17 +50,16 @@ class Instr {
     union {
 #ifdef RELLUME_WITH_X86
         FdInstr x86;
-#endif // RELLUME_WITH_X86
+#endif  // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
         FrvInst rv64;
-#endif // RELLUME_WITH_RV64
+#endif  // RELLUME_WITH_RV64
 #ifdef RELLUME_WITH_AARCH64
         farmdec::Inst _a64;
-#endif // RELLUME_WITH_AARCH64
+#endif  // RELLUME_WITH_AARCH64
     };
 
-public:
-
+   public:
 #ifdef RELLUME_WITH_X86
     using Type = FdInstrType;
     struct Reg {
@@ -75,7 +74,7 @@ public:
         const FdInstr* fdi;
         unsigned idx;
 
-    public:
+       public:
         constexpr Op(const FdInstr* fdi, unsigned idx) : fdi(fdi), idx(idx) {}
         explicit operator bool() const {
             return idx < 4 && FD_OP_TYPE(fdi, idx) != FD_OT_NONE;
@@ -90,10 +89,16 @@ public:
         }
 
         bool is_imm() const { return FD_OP_TYPE(fdi, idx) == FD_OT_IMM; }
-        int64_t imm() const { assert(is_imm()); return FD_OP_IMM(fdi, idx); }
+        int64_t imm() const {
+            assert(is_imm());
+            return FD_OP_IMM(fdi, idx);
+        }
 
         bool is_pcrel() const { return FD_OP_TYPE(fdi, idx) == FD_OT_OFF; }
-        int64_t pcrel() const { assert(is_pcrel()); return FD_OP_IMM(fdi, idx); }
+        int64_t pcrel() const {
+            assert(is_pcrel());
+            return FD_OP_IMM(fdi, idx);
+        }
 
         bool is_mem() const { return FD_OP_TYPE(fdi, idx) == FD_OT_MEM; }
         const Reg base() const {
@@ -110,9 +115,18 @@ public:
                 return 1 << FD_OP_SCALE(fdi, idx);
             return 0;
         }
-        int64_t off() const { assert(is_mem()); return FD_OP_DISP(fdi, idx); }
-        unsigned seg() const { assert(is_mem()); return FD_SEGMENT(fdi); }
-        unsigned addrsz() const { assert(is_mem()); return FD_ADDRSIZE(fdi); }
+        int64_t off() const {
+            assert(is_mem());
+            return FD_OP_DISP(fdi, idx);
+        }
+        unsigned seg() const {
+            assert(is_mem());
+            return FD_SEGMENT(fdi);
+        }
+        unsigned addrsz() const {
+            assert(is_mem());
+            return FD_ADDRSIZE(fdi);
+        }
     };
 
     Type type() const { return FD_TYPE(&x86); }
@@ -122,8 +136,7 @@ public:
     bool has_rep() const { return FD_HAS_REP(&x86); }
     bool has_repnz() const { return FD_HAS_REPNZ(&x86); }
     bool has_lock() const { return FD_HAS_LOCK(&x86); }
-#endif // RELLUME_WITH_X86
-
+#endif  // RELLUME_WITH_X86
 
     size_t len() const { return instlen; }
     uintptr_t start() const { return addr; }
@@ -134,13 +147,13 @@ public:
         assert(arch == Arch::RV64);
         return &rv64;
     }
-#endif // RELLUME_WITH_RV64
+#endif  // RELLUME_WITH_RV64
 #ifdef RELLUME_WITH_AARCH64
     operator const farmdec::Inst*() const {
         assert(arch == Arch::AArch64);
         return &_a64;
     }
-#endif // RELLUME_WITH_AARCH64
+#endif  // RELLUME_WITH_AARCH64
 
     /// Fill Instr with the instruction at buf and return number of consumed
     /// bytes (or negative on error). addr is the virtual address of the
@@ -151,32 +164,32 @@ public:
         int res = -1;
         switch (arch) {
 #ifdef RELLUME_WITH_X86
-        case Arch::X86:
-            res = fd_decode(buf, len, /*mode=*/64, /*addr=*/0, &x86);
-            break;
-#endif // RELLUME_WITH_X86
+            case Arch::X86:
+                res = fd_decode(buf, len, /*mode=*/32, /*addr=*/0, &x86);
+                break;
+#endif  // RELLUME_WITH_X86
 #ifdef RELLUME_WITH_RV64
-        case Arch::RV64:
-            res = frv_decode(len, buf, FRV_RV64, &rv64);
-            break;
-#endif // RELLUME_WITH_RV64
+            case Arch::RV64:
+                res = frv_decode(len, buf, FRV_RV64, &rv64);
+                break;
+#endif  // RELLUME_WITH_RV64
 #ifdef RELLUME_WITH_AARCH64
-        case Arch::AArch64: {
-            if (len < 4) {
-                return -1;
-            }
+            case Arch::AArch64: {
+                if (len < 4) {
+                    return -1;
+                }
 
-            uint32_t binst = buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
-            fad_decode(&binst, 1, &_a64);
-            if (_a64.op == farmdec::A64_ERROR || _a64.op == farmdec::A64_UNKNOWN) {
-                return -1;
+                uint32_t binst = buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
+                fad_decode(&binst, 1, &_a64);
+                if (_a64.op == farmdec::A64_ERROR || _a64.op == farmdec::A64_UNKNOWN) {
+                    return -1;
+                }
+                res = 4;  // all instructions are 32 bits long
+                break;
             }
-            res = 4; // all instructions are 32 bits long
-            break;
-        }
-#endif // RELLUME_WITH_AARCH64
-        default:
-            break;
+#endif  // RELLUME_WITH_AARCH64
+            default:
+                break;
         }
 
         if (res >= 0)
@@ -185,6 +198,6 @@ public:
     }
 };
 
-} // namespace
+}  // namespace rellume
 
 #endif
