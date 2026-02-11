@@ -35,13 +35,14 @@ int main(void) {
     // };
 
     static const unsigned char code[] = {
-        0x8b, 0x44, 0x24, 0x04, // mov    eax,DWORD PTR [esp+0x4]
-        0x8b, 0x54, 0x24, 0x08, // mov    edx,DWORD PTR [esp+0x8]
-        0x8b, 0x08,             // mov    eax,DWORD PTR [eax]
-        0x03, 0x0c, 0x90,       // add    ecx,DWORD PTR [eax+edx*4]
-        0x0f, 0x31,             // rdtsc
-        0x01, 0xc8,             // add    eax,ecx
-        0xc3,                   // ret
+        0x0f, 0x31,                   // rdtsc
+        0xbf, 0x04, 0x20, 0x40, 0x00, // mov    edi,0x402004
+        0x48, 0x89, 0xc6,             // mov    rsi,rax
+        0x48, 0xc1, 0xe2, 0x20,       // shl    rdx,0x20
+        0x31, 0xc0,                   // xor    eax,eax
+        0x48, 0x09, 0xd6,             // or     rsi,rdx
+        0xe9, 0xd8, 0xfe, 0xff, 0xff, // jmp    401030 <printf@plt> 
+        0xc3,                         // ret  
     };
 
     // Create function for lifting
